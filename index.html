@@ -157,6 +157,14 @@ aside .ctc em{width:28px;height:28px;font-size:14px;background:#ffffff1a}
 .btn:disabled{opacity:.6;pointer-events:none}
 @media(max-width:859px){.lgL{padding:18px 16px}.pjl.big{--hs:64px;--fs:17px;gap:10px}.pjtag{font-size:11px;margin-top:10px;letter-spacing:1.5px}.lgR{padding:18px;gap:10px}.lgC{padding:0 18px 18px}.lgR h2{font-size:20px}}
 @media(max-height:680px){.pjtag{display:none}}
+.cfgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.cfgs .card{margin:0;border-bottom:5px solid #cfd6e4;box-shadow:0 10px 24px #0001}
+.addr{display:flex;gap:10px;margin-bottom:12px}.addr input{flex:1;min-width:0}
+.chips{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto;padding:2px 2px 6px}
+.chip{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px 8px 12px;border-radius:10px;background:linear-gradient(#fff,#eef2f9);box-shadow:0 3px 0 #c3cce0,0 4px 8px #0001;font-size:14px}
+.chip span{overflow-wrap:anywhere}
+.hint{color:var(--mu);font-size:13px;margin:-6px 0 14px}
+@media(max-width:520px){.addr{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -188,6 +196,7 @@ aside .ctc em{width:28px;height:28px;font-size:14px;background:#ffffff1a}
   <button class="nav" data-p="abast">⛽ Abastecimentos</button>
   <button class="nav" data-p="veic">🚚 Veículos</button>
   <button class="nav" data-p="rel">📑 Relatórios</button>
+  <button class="nav" data-p="cfg">⚙️ Configurações</button>
   <button class="nav" data-p="admin" id="nAdm" style="display:none">🛡️ Administração</button>
   <button class="nav" style="margin-top:auto" id="bkp">💾 Backup (JSON)</button>
   <button class="nav" onclick="sair()">🚪 Sair</button>
@@ -232,6 +241,16 @@ aside .ctc em{width:28px;height:28px;font-size:14px;background:#ffffff1a}
     <div class="card tw"><table><thead><tr><th>Placa</th><th>Modelo</th><th>Tipo</th><th>Combustível padrão</th><th>Gasto (período)</th><th>Litros</th><th></th></tr></thead><tbody id="tv"></tbody></table></div>
   </div>
 
+  <div id="p-cfg" class="pg" style="display:none">
+    <h2>Configurações</h2>
+    <p class="hint">Cadastre aqui as listas que aparecem como lista suspensa nos formulários de veículo e de abastecimento.</p>
+    <div class="cfgs">
+      <div class="card"><h3>👷 Motoristas</h3><div class="addr"><input id="cM" placeholder="Nome do motorista" maxlength="60"><button class="btn g" onclick="cfgAdd('mot','cM')">＋ Adicionar</button></div><div class="chips" id="lM"></div></div>
+      <div class="card"><h3>⛽ Postos</h3><div class="addr"><input id="cP" placeholder="Nome do posto" maxlength="60"><button class="btn g" onclick="cfgAdd('pos','cP')">＋ Adicionar</button></div><div class="chips" id="lP"></div></div>
+      <div class="card"><h3>🚚 Modelos de veículos</h3><div class="addr"><input id="cV" placeholder="Ex.: Volvo FH 460" maxlength="60"><button class="btn g" onclick="cfgAdd('mod','cV')">＋ Adicionar</button></div><div class="chips" id="lV"></div></div>
+    </div>
+  </div>
+
   <div id="p-admin" class="pg" style="display:none">
     <h2>Administração de clientes</h2>
     <div class="acts"><button class="btn" onclick="adminLoad()">↻ Atualizar</button></div>
@@ -248,8 +267,8 @@ aside .ctc em{width:28px;height:28px;font-size:14px;background:#ffffff1a}
 <div class="modal" id="mA"><div class="mb"><h3 id="mAt">Abastecimento</h3><div class="grid">
   <div class="f"><label>Data</label><input type="date" id="aD"></div>
   <div class="f"><label>Veículo</label><select id="aV"></select></div>
-  <div class="f"><label>Motorista</label><input id="aM"></div>
-  <div class="f"><label>Posto</label><input id="aP"></div>
+  <div class="f"><label>Motorista</label><select id="aM"></select></div>
+  <div class="f"><label>Posto</label><select id="aP"></select></div>
   <div class="f"><label>Combustível</label><select id="aC"><option>Diesel S10</option><option>Diesel S500</option><option>Gasolina</option><option>Etanol</option><option>GNV</option></select></div>
   <div class="f"><label>KM do odômetro</label><input type="number" id="aK" min="0"></div>
   <div class="f"><label>Litros</label><input type="number" id="aL" step="0.01" min="0"></div>
@@ -259,7 +278,7 @@ aside .ctc em{width:28px;height:28px;font-size:14px;background:#ffffff1a}
 
 <div class="modal" id="mV"><div class="mb"><h3>Veículo</h3><div class="grid">
   <div class="f"><label>Placa</label><input id="vP" maxlength="8" style="text-transform:uppercase"></div>
-  <div class="f"><label>Modelo</label><input id="vM"></div>
+  <div class="f"><label>Modelo</label><select id="vM"></select></div>
   <div class="f"><label>Tipo</label><select id="vT"><option>Caminhão</option><option>Carro</option><option>Moto</option><option>Van</option><option>Utilitário</option></select></div>
   <div class="f"><label>Combustível padrão</label><select id="vC"><option>Diesel S10</option><option>Diesel S500</option><option>Gasolina</option><option>Etanol</option><option>GNV</option></select></div>
 </div><div class="acts" style="margin:0"><button class="btn g" onclick="salvarV()">Salvar</button><button class="btn s" onclick="fechar()">Cancelar</button></div></div></div>
@@ -314,7 +333,7 @@ let eA=null,eV=null;
 function fechar(){$$('.modal').forEach(m=>m.classList.remove('on'))}
 function abrirAb(id){eA=id||null;const a=DB.a.find(x=>x.id==id)||{data:iso(new Date()),vid:DB.v[0]?.id,mot:'',posto:'',comb:DB.v[0]?.comb||'Diesel S10',litros:'',preco:'',km:''};
   if(!DB.v.length)return alert('Cadastre um veículo primeiro.');
-  $('#aD').value=a.data;$('#aV').value=a.vid;$('#aM').value=a.mot;$('#aP').value=a.posto;$('#aC').value=a.comb;$('#aL').value=a.litros;$('#aR').value=a.preco;$('#aK').value=a.km;calc();$('#mA').classList.add('on')}
+  $('#aD').value=a.data;$('#aV').value=a.vid;cfgSel('#aM',DB.cfg.mot,a.mot,'Selecione o motorista');cfgSel('#aP',DB.cfg.pos,a.posto,'Selecione o posto');$('#aC').value=a.comb;$('#aL').value=a.litros;$('#aR').value=a.preco;$('#aK').value=a.km;calc();$('#mA').classList.add('on')}
 function calc(){$('#aT').value=R((+$('#aL').value||0)*(+$('#aR').value||0))}
 ['#aL','#aR'].forEach(s=>$(s).oninput=calc);
 $('#aV').onchange=()=>{const v=DB.v.find(x=>x.id==$('#aV').value);if(v)$('#aC').value=v.comb};
@@ -322,7 +341,7 @@ function salvarAb(){const a={id:eA||uid(),data:$('#aD').value,vid:$('#aV').value
   if(!a.data||!a.vid||a.litros<=0||a.preco<=0)return alert('Informe data, veículo, litros e preço.');
   if(eA)DB.a[DB.a.findIndex(x=>x.id==eA)]=a;else DB.a.push(a);save();fechar();render()}
 async function delAb(id){if(await ask('Excluir este abastecimento?','Excluir','r')){DB.a=DB.a.filter(x=>x.id!=id);save();render()}}
-function abrirV(id){eV=id||null;const v=DB.v.find(x=>x.id==id)||{placa:'',modelo:'',tipo:'Caminhão',comb:'Diesel S10'};$('#vP').value=v.placa;$('#vM').value=v.modelo;$('#vT').value=v.tipo;$('#vC').value=v.comb;$('#mV').classList.add('on')}
+function abrirV(id){if(!id&&!DB.cfg.mod.length)return ask('Nenhum modelo de veículo cadastrado.\nCadastre os modelos em Configurações primeiro.','Ir para Configurações','g').then(y=>y&&$('.nav[data-p="cfg"]').click());eV=id||null;const v=DB.v.find(x=>x.id==id)||{placa:'',modelo:'',tipo:'Caminhão',comb:'Diesel S10'};$('#vP').value=v.placa;cfgSel('#vM',DB.cfg.mod,v.modelo,'Selecione o modelo');$('#vT').value=v.tipo;$('#vC').value=v.comb;$('#mV').classList.add('on')}
 function salvarV(){const v={id:eV||uid(),placa:$('#vP').value.trim().toUpperCase(),modelo:$('#vM').value.trim(),tipo:$('#vT').value,comb:$('#vC').value};
   if(!v.placa||!v.modelo)return alert('Informe placa e modelo.');
   if(!eV&&DB.v.length>=lim())return alert('Limite do plano atingido ('+lim()+' veículos). Fale conosco para fazer upgrade.');
@@ -425,7 +444,7 @@ async function sessao(u){if(criando)return;
     const d=await fs.collection('empresas').doc(u.uid).collection('dados').doc('frota').get();
     DB=d.exists?JSON.parse(d.data().json):{v:[],a:[]};abrir();
   }catch(e){msg(e)}}
-function abrir(){$('#login').style.display='none';$('#bloq').style.display='none';
+function abrir(){normDB();cfgRender();$('#login').style.display='none';$('#bloq').style.display='none';
   $('#nAdm').style.display=isAdm?'flex':'none';$('#plano').style.display=LOCAL?'none':'flex';
   fillVeic();render();if(isAdm)adminLoad()}
 function banner(){const v=dias(EMP.validade),p=PLANOS[EMP.plano]||PLANOS.teste;
@@ -440,7 +459,20 @@ async function admAct(id,a,b){const tr=b.closest('tr'),ref=fs.collection('empres
   if(a=='mais'){const d0=e.validade&&e.validade.toDate()>new Date()?e.validade.toDate():new Date();d0.setDate(d0.getDate()+30);u={validade:T.fromDate(d0),status:'ativo'}}
   if(a=='tog')u={status:e.status=='ativo'?'bloqueado':'ativo'};
   try{await ref.update(u);adminLoad()}catch(x){alert(x.message)}}
-$$('.nav[data-p]').forEach(b=>b.addEventListener('click',()=>{$('#filtros').style.display=b.dataset.p=='admin'?'none':''}));
+$$('.nav[data-p]').forEach(b=>b.addEventListener('click',()=>{$('#filtros').style.display=['admin','cfg'].includes(b.dataset.p)?'none':''}));
+// ===== Configurações: listas de motoristas, postos e modelos =====
+const CFG=[['mot','cM','lM'],['pos','cP','lP'],['mod','cV','lV']];
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function normDB(){if(DB.cfg)return;const u=k=>[...new Set(k.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt'));
+  DB.cfg={mot:u(DB.a.map(a=>a.mot)),pos:u(DB.a.map(a=>a.posto)),mod:u(DB.v.map(v=>v.modelo))}}
+function cfgSel(id,list,val,ph){const s=$(id),L=[...list];if(val&&!L.includes(val))L.push(val);
+  s.innerHTML=`<option value="">${L.length?ph:'Cadastre em Configurações'}</option>`+L.map(x=>`<option>${esc(x)}</option>`).join('');s.value=val||''}
+function cfgRender(){CFG.forEach(([k,,l])=>{$('#'+l).innerHTML=DB.cfg[k].map((x,n)=>`<div class="chip"><span>${esc(x)}</span><button class="btn sm r" onclick="cfgDel('${k}',${n})" aria-label="Remover">✕</button></div>`).join('')||'<div class="empty">Nenhum cadastrado ainda.</div>'})}
+function cfgAdd(k,i){const e=$('#'+i),v=e.value.trim().replace(/\s+/g,' ');if(!v)return alert('Digite um nome para adicionar.');
+  if(DB.cfg[k].some(x=>x.toLowerCase()==v.toLowerCase()))return alert('Este item já está cadastrado.');
+  DB.cfg[k].push(v);DB.cfg[k].sort((a,b)=>a.localeCompare(b,'pt'));save();cfgRender();e.value='';e.focus()}
+async function cfgDel(k,n){const x=DB.cfg[k][n];if(await ask('Remover "'+x+'" da lista?\nOs registros antigos continuam como estão.','Remover','r')){DB.cfg[k].splice(n,1);save();cfgRender()}}
+CFG.forEach(([k,i])=>$('#'+i).addEventListener('keydown',e=>{if(e.key=='Enter')cfgAdd(k,i)}));
 fillVeic();render();
 </script>
 </body>
