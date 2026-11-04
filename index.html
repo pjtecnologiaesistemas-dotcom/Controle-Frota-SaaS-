@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Controle de Combustível da Frota</title>
+<title>Controle de Combustível da Frota · PJ Tecnologia e Sistemas</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 110'%3E%3Cpolygon points='50,4 96,28 96,82 50,106 4,82 4,28' fill='%230d3878' stroke='%2300c8f8' stroke-width='5'/%3E%3Ctext x='50' y='68' font-size='36' font-weight='900' text-anchor='middle' fill='%23fff' font-family='Arial'%3EPJ%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -83,16 +85,75 @@ tr:hover td{background:#f8faff}
 .ct{font-size:12px;color:var(--mu);text-align:center;line-height:1.7;word-break:break-word}
 .ct a{color:var(--pri);text-decoration:none}
 aside .ct{color:#94a3b8;padding-top:6px}aside .ct a{color:#93c5fd}
+.ovl{overflow:auto;align-items:flex-start}
+.lg,.lb{margin:auto}
+aside{overflow-y:auto}
+.hxw{position:relative;display:inline-block;width:var(--hs,56px);height:calc(var(--hs,56px)*1.1);flex:none}
+.hxw svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 0 10px #00c8f873)}
+.hxw b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Orbitron,system-ui,sans-serif;font-weight:900;font-size:calc(var(--hs,56px)*.37);letter-spacing:-1px;color:#eef4ff;text-shadow:0 0 12px #00eaff99}
+.hxw i,.pjn i{font-style:normal;color:#00eaff}
+.pjl{display:flex;align-items:center;gap:14px}
+.pjt{display:flex;flex-direction:column;line-height:1.2}
+.pjn{font-family:Orbitron,system-ui,sans-serif;font-weight:700;letter-spacing:2px;color:#eef4ff;font-size:var(--fs,18px);text-transform:uppercase;white-space:nowrap}
+.pjs{font-family:Rajdhani,system-ui,sans-serif;font-size:calc(var(--fs,18px)*.6);letter-spacing:.3em;text-transform:uppercase;color:#00c8f8}
+.pjl.big{flex-direction:column;--hs:92px;--fs:22px;text-align:center}.pjl.big .pjt{align-items:center}
+.pjl.side{--hs:42px;--fs:13px;gap:10px;padding:4px 4px 14px}
+.lg{display:grid;grid-template-areas:"l" "r" "c";width:100%;max-width:460px;background:#fff;border-radius:20px;box-shadow:0 24px 70px #0008;overflow:hidden}
+.lgL{grid-area:l;background-color:#0a1a33;background-image:linear-gradient(#00c8f80d 1px,transparent 1px),linear-gradient(90deg,#00c8f80d 1px,transparent 1px);background-size:30px 30px;padding:26px 20px;text-align:center}
+.pjtag{font-family:Rajdhani,system-ui,sans-serif;letter-spacing:2px;text-transform:uppercase;font-size:13px;color:#c8d8f0;margin-top:14px;line-height:1.5}.pjtag strong{color:#f0a500}
+.lgR{grid-area:r;padding:22px;display:flex;flex-direction:column;gap:12px}
+.lgR .f{flex:none}.lgR .btn{width:100%;padding:13px}
+.lgC{grid-area:c;padding:0 22px 22px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#e9edf5;padding:5px;border-radius:12px}
+.tabs button{border:0;padding:10px;border-radius:9px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;background:none;color:var(--mu)}
+.tabs button.on{background:#fff;color:var(--pri);box-shadow:0 3px 0 #c5cddd,0 4px 8px #0001}
+.pw{position:relative}.pw input{padding-right:46px}
+.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:18px;cursor:pointer;padding:6px}
+.lk{background:none;border:0;color:var(--pri);font:inherit;font-size:13px;cursor:pointer;text-align:center;padding:4px}
+.ctc{display:grid;gap:8px;background:#f3f6fb;border:1px solid #dde4f0;border-radius:14px;padding:12px}
+.ctc h4{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mu)}
+.ctc a{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tx);background:#fff;border-radius:10px;padding:8px 10px;box-shadow:0 2px 0 #cfd8e8;font-size:13px;min-width:0;transition:.1s}
+.ctc a:hover{transform:translateY(-1px)}
+.ctc a span{display:flex;flex-direction:column;min-width:0}
+.ctc a small{font-size:10px;color:var(--mu);text-transform:uppercase;font-weight:700}
+.ctc a b{font-weight:600;overflow-wrap:anywhere}
+.ctc em{font-style:normal;font-size:17px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#e0ebff;flex:none}
+aside .ctc{background:#ffffff0d;border-color:#ffffff1a;padding:10px;margin-top:6px}
+aside .ctc h4{color:#94a3b8}
+aside .ctc a{background:#ffffff12;color:#e2e8f0;box-shadow:0 2px 0 #0006;padding:6px 8px;font-size:12px}
+aside .ctc a b{display:none}
+aside .ctc a small{font-size:12px;color:#e2e8f0;text-transform:none}
+aside .ctc em{width:28px;height:28px;font-size:14px;background:#ffffff1a}
+@media(min-width:860px){.lg{max-width:900px;grid-template-columns:1fr 1fr;grid-template-areas:"l r" "c r"}
+.lgL{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:34px 24px 20px}
+.lgC{background:#0a1a33;padding:0 24px 24px}.lgR{padding:32px}}
 </style>
 </head>
 <body>
-<div id="login" class="ovl" style="display:flex"><div class="lb"><h2>⛽ Frota Combustível</h2><small style="color:var(--mu)">Controle de combustível da frota na nuvem</small>
-<div class="f"><label>Empresa (apenas no cadastro)</label><input id="lN"></div><div class="f"><label>E-mail</label><input id="lE" type="email"></div><div class="f"><label>Senha</label><input id="lS" type="password"></div>
-<div id="lgMsg"></div><div class="acts" style="margin:0"><button class="btn" onclick="logar()">Entrar</button><button class="btn g" onclick="criar()">Teste grátis 14 dias</button></div><button class="btn s" onclick="modoLocal()">Modo local (demonstração)</button><div class="ct">📞 <a href="https://wa.me/5519997097145" target="_blank">(19) 99709-7145</a><br>🌐 <a href="https://pjtecnologiaesistemas.com.br/" target="_blank">pjtecnologiaesistemas.com.br</a><br>✉️ <a href="mailto:comercial@pjtecnologiaesistemas.com.br">comercial@pjtecnologiaesistemas.com.br</a></div></div></div>
-<div id="bloq" class="ovl" style="display:none"><div class="lb"><h2 id="bqT">Acesso bloqueado</h2><p>Fale conosco para regularizar o seu plano.</p><a class="btn g" id="bqZ" target="_blank" style="text-decoration:none;text-align:center">Falar no WhatsApp</a><button class="btn s" onclick="sair()">Sair</button><div class="ct">📞 <a href="https://wa.me/5519997097145" target="_blank">(19) 99709-7145</a><br>🌐 <a href="https://pjtecnologiaesistemas.com.br/" target="_blank">pjtecnologiaesistemas.com.br</a><br>✉️ <a href="mailto:comercial@pjtecnologiaesistemas.com.br">comercial@pjtecnologiaesistemas.com.br</a></div></div></div>
+<svg width="0" height="0" style="position:absolute"><defs>
+<linearGradient id="hG" x1="0" y1="0" x2="100" y2="110" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0d3878"/><stop offset="1" stop-color="#051225"/></linearGradient>
+<linearGradient id="hS" x1="0" y1="0" x2="100" y2="110" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00eaff"/><stop offset=".5" stop-color="#0088cc"/><stop offset="1" stop-color="#00c8f8"/></linearGradient>
+<symbol id="pjhex" viewBox="0 0 100 110"><polygon points="50,4 96,28 96,82 50,106 4,82 4,28" fill="url(#hG)" stroke="url(#hS)" stroke-width="2.5"/><polygon points="50,12 88,33 88,78 50,98 12,78 12,33" fill="none" stroke="rgba(0,200,248,.18)"/><g fill="#00eaff" opacity=".8"><circle cx="50" cy="4" r="2.5"/><circle cx="96" cy="28" r="2.5"/><circle cx="96" cy="82" r="2.5"/><circle cx="50" cy="106" r="2.5"/><circle cx="4" cy="82" r="2.5"/><circle cx="4" cy="28" r="2.5"/></g></symbol></defs></svg>
+<div id="login" class="ovl" style="display:flex"><div class="lg">
+  <div class="lgL"><div class="pjl big"></div><div class="pjtag"><strong>Inovação que conecta.</strong><br>Tecnologia que transforma.</div></div>
+  <div class="lgR">
+    <div><h2 style="margin:0 0 2px">Acesse sua conta</h2><small style="color:var(--mu)">Controle de combustível da frota na nuvem</small></div>
+    <div class="tabs"><button id="tL" class="on" onclick="aba('l')">Entrar</button><button id="tC" onclick="aba('c')">Criar conta</button></div>
+    <div class="f" id="gN" style="display:none"><label>Nome da empresa</label><input id="lN" autocomplete="organization" placeholder="Ex.: Transportadora Silva"></div>
+    <div class="f"><label>E-mail</label><input id="lE" type="email" autocomplete="email" inputmode="email" placeholder="voce@empresa.com.br"></div>
+    <div class="f"><label>Senha</label><div class="pw"><input id="lS" type="password" autocomplete="current-password" placeholder="Mínimo de 6 caracteres"><button type="button" onclick="verSenha()" aria-label="Mostrar senha">👁</button></div></div>
+    <div id="lgMsg" role="alert"></div>
+    <button class="btn" id="lgGo" onclick="enviar()">Entrar</button>
+    <small id="lgNt" style="display:none;color:var(--mu);text-align:center">🎁 14 dias grátis, sem cartão · até 3 veículos no teste.</small>
+    <button class="lk" onclick="esqueci()">Esqueci minha senha</button>
+    <button class="lk" style="color:var(--mu)" onclick="modoLocal()">Testar em modo local (demonstração)</button>
+  </div>
+  <div class="lgC"><div class="ctc"></div></div>
+</div></div>
+<div id="bloq" class="ovl" style="display:none"><div class="lb" style="text-align:center;align-items:center"><div class="pjl" style="--hs:64px;--fs:18px;color:#fff;background:#0a1a33;padding:14px 18px;border-radius:14px"></div><h2 id="bqT">Acesso bloqueado</h2><p style="color:var(--mu)">Fale conosco para regularizar o seu plano.</p><a class="btn g" id="bqZ" target="_blank" style="text-decoration:none;text-align:center;width:100%">Falar no WhatsApp</a><div class="ctc" style="width:100%;text-align:left"></div><button class="btn s" style="width:100%" onclick="sair()">Sair</button></div></div>
 <div class="ov" id="ov" onclick="menu(0)"></div>
 <aside id="side">
-  <h1>⛽ Frota Combustível</h1>
+  <div class="pjl side"></div>
   <button class="nav on" data-p="dash">📊 Painel</button>
   <button class="nav" data-p="abast">⛽ Abastecimentos</button>
   <button class="nav" data-p="veic">🚚 Veículos</button>
@@ -100,7 +161,7 @@ aside .ct{color:#94a3b8;padding-top:6px}aside .ct a{color:#93c5fd}
   <button class="nav" data-p="admin" id="nAdm" style="display:none">🛡️ Administração</button>
   <button class="nav" style="margin-top:auto" id="bkp">💾 Backup (JSON)</button>
   <button class="nav" onclick="sair()">🚪 Sair</button>
-  <div class="ct">📞 <a href="https://wa.me/5519997097145" target="_blank">(19) 99709-7145</a><br>🌐 <a href="https://pjtecnologiaesistemas.com.br/" target="_blank">pjtecnologiaesistemas.com.br</a><br>✉️ <a href="mailto:comercial@pjtecnologiaesistemas.com.br">comercial@pjtecnologiaesistemas.com.br</a></div>
+  <div class="ctc"></div>
 </aside>
 <main>
   <div class="top"><button class="btn sm" onclick="menu(1)">☰ Menu</button><b>Controle de Combustível</b></div>
@@ -284,8 +345,23 @@ const ZAP='5519997097145'; // WhatsApp para assinatura/renovação
 const PLANOS={teste:{n:'Teste grátis',l:3},basico:{n:'Básico',l:10},pro:{n:'Profissional',l:9999}};
 let fs,au,isAdm=false,criando=false;
 $('#bqZ').href='https://wa.me/'+ZAP;
+// logo PJ e card de contato (fonte única)
+const SITE='https://pjtecnologiaesistemas.com.br/',MAIL='comercial@pjtecnologiaesistemas.com.br';
+const LOGO=`<span class="hxw"><svg viewBox="0 0 100 110"><use href="#pjhex"/></svg><b>P<i>J</i></b></span><span class="pjt"><span class="pjn"><i>PJ</i>·Tecnologia</span><span class="pjs">e Sistemas</span></span>`;
+const CTC=`<h4>Fale com a PJ Tecnologia</h4><a href="https://wa.me/${ZAP}" target="_blank" rel="noopener" title="(19) 99709-7145"><em>📞</em><span><small>WhatsApp</small><b>(19) 99709-7145</b></span></a><a href="${SITE}" target="_blank" rel="noopener" title="${SITE}"><em>🌐</em><span><small>Site</small><b>pjtecnologiaesistemas.com.br</b></span></a><a href="mailto:${MAIL}" title="${MAIL}"><em>✉️</em><span><small>E-mail</small><b>${MAIL}</b></span></a>`;
+$$('.pjl').forEach(e=>e.innerHTML=LOGO);$$('.ctc').forEach(e=>e.innerHTML=CTC);
+// formulário de acesso
+let modo='l';
+function aba(t){modo=t;$('#tL').classList.toggle('on',t=='l');$('#tC').classList.toggle('on',t=='c');$('#gN').style.display=t=='c'?'flex':'none';
+  $('#lgNt').style.display=t=='c'?'block':'none';$('#lgGo').textContent=t=='c'?'Criar conta e iniciar teste grátis':'Entrar';$('#lS').autocomplete=t=='c'?'new-password':'current-password';msg('')}
+async function enviar(){const b=$('#lgGo');b.disabled=true;try{await(modo=='c'?criar():logar())}finally{b.disabled=false}}
+async function esqueci(){const e=$('#lE').value.trim();if(!au)return msg('Firebase não configurado.');if(!e)return msg('Digite seu e-mail para receber o link.');
+  try{await au.sendPasswordResetEmail(e);msg('Enviamos um link de redefinição para o seu e-mail.',1)}catch(x){msg(x)}}
+function verSenha(){const i=$('#lS');i.type=i.type=='password'?'text':'password'}
+$('#login').addEventListener('keydown',e=>{if(e.key=='Enter')enviar()});
 const lim=()=>EMP?EMP.limite||3:3;
-const msg=m=>$('#lgMsg').textContent=typeof m=='string'?m:(m.message||'Erro');
+const ERR={'auth/invalid-credential':'E-mail ou senha incorretos.','auth/wrong-password':'E-mail ou senha incorretos.','auth/user-not-found':'E-mail ou senha incorretos.','auth/email-already-in-use':'Este e-mail já está cadastrado. Use a aba Entrar.','auth/weak-password':'A senha deve ter pelo menos 6 caracteres.','auth/invalid-email':'E-mail inválido.','auth/missing-password':'Informe a senha.','auth/network-request-failed':'Sem conexão. Verifique a internet.','auth/too-many-requests':'Muitas tentativas. Aguarde um pouco e tente de novo.','permission-denied':'Sem permissão. Verifique se as regras do Firestore foram publicadas.'};
+const msg=(m,ok)=>{const e=$('#lgMsg');e.style.color=ok?'#16a34a':'';e.textContent=typeof m=='string'?m:(ERR[m.code]||m.message||'Erro')};
 const dias=t=>t?Math.ceil((t.toDate()-new Date())/864e5):null;
 if(FB.apiKey&&FB.projectId){firebase.initializeApp(FB);au=firebase.auth();fs=firebase.firestore();au.onAuthStateChanged(sessao)}
 else msg('Firebase não configurado: preencha FB no código ou use o modo local.');
