@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de Combustível da Frota</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-firestore-compat.min.js"></script>
+<style>
+:root{--bg:#eef1f6;--card:#fff;--tx:#1d2433;--mu:#6b7488;--pri:#2563eb;--pri2:#1d4ed8;--side:#111827;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;--bd:#dde2ec}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx);display:flex;min-height:100vh}
+aside{width:250px;background:linear-gradient(180deg,#111827,#1f2937);color:#fff;padding:18px 14px;position:fixed;inset:0 auto 0 0;z-index:30;transition:transform .3s;display:flex;flex-direction:column;gap:8px;box-shadow:4px 0 18px #0003}
+aside h1{font-size:17px;padding:6px 8px 16px;display:flex;gap:8px;align-items:center}
+.nav{background:#ffffff0d;border:0;color:#cbd5e1;text-align:left;padding:12px 14px;border-radius:10px;font-size:14px;cursor:pointer;box-shadow:0 4px 0 #0006;transition:.12s;display:flex;gap:10px}
+.nav:hover{background:#ffffff1c;color:#fff}
+.nav.on{background:linear-gradient(#3b82f6,#2563eb);color:#fff;box-shadow:0 4px 0 #1e3a8a}
+.nav:active{transform:translateY(3px);box-shadow:0 1px 0 #1e3a8a}
+main{margin-left:250px;flex:1;padding:22px;min-width:0}
+.top{display:none;align-items:center;gap:12px;margin-bottom:14px}
+h2{font-size:22px;margin-bottom:14px}
+.bar{background:var(--card);border-radius:14px;padding:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;box-shadow:0 2px 10px #0001;margin-bottom:16px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:140px;flex:1}
+.f label{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px}
+select,input{font:inherit;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);width:100%;color:var(--tx);background:#fff}
+select{appearance:none;-webkit-appearance:none;cursor:pointer;border:1px solid #c5cddd;border-bottom:4px solid #aab4c8;background:linear-gradient(#fff,#e9edf5) ;box-shadow:inset 0 1px 0 #fff,0 3px 6px #0002;padding-right:32px;background-image:linear-gradient(#fff,#e9edf5),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:0 0,right 12px center;background-size:auto,12px}
+select:focus,input:focus{outline:2px solid #93c5fd}
+select:active{transform:translateY(2px);border-bottom-width:2px}
+select option{background:#fff;color:var(--tx);padding:8px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;font-size:13px;color:#fff;cursor:pointer;background:linear-gradient(#3b82f6,#2563eb);box-shadow:0 5px 0 #1e40af,0 8px 14px #0003;transition:.1s;white-space:nowrap}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #1e40af}
+.btn.g{background:linear-gradient(#22c55e,#16a34a);box-shadow:0 5px 0 #166534,0 8px 14px #0003}.btn.g:active{box-shadow:0 1px 0 #166534}
+.btn.r{background:linear-gradient(#ef4444,#dc2626);box-shadow:0 5px 0 #991b1b,0 8px 14px #0003}.btn.r:active{box-shadow:0 1px 0 #991b1b}
+.btn.o{background:linear-gradient(#fbbf24,#f59e0b);box-shadow:0 5px 0 #b45309,0 8px 14px #0003}.btn.o:active{box-shadow:0 1px 0 #b45309}
+.btn.s{background:linear-gradient(#94a3b8,#64748b);box-shadow:0 5px 0 #334155,0 8px 14px #0003}.btn.s:active{box-shadow:0 1px 0 #334155}
+.btn.sm{padding:6px 10px;font-size:12px;box-shadow:0 3px 0 #1e40af}.btn.sm.r{box-shadow:0 3px 0 #991b1b}
+.btn.sm:active{transform:translateY(2px);box-shadow:0 1px 0 #000}
+.acts{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;padding-bottom:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 4px 0 #cfd6e4,0 8px 16px #0001;border-left:5px solid var(--pri)}
+.kpi small{color:var(--mu);font-size:11px;font-weight:700;text-transform:uppercase}
+.kpi b{display:block;font-size:24px;margin-top:6px}
+.card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 2px 10px #0001;margin-bottom:16px}
+.card h3{font-size:15px;margin-bottom:12px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+th{background:#f3f5fa;text-align:left;padding:10px;font-size:11px;text-transform:uppercase;color:var(--mu);position:sticky;top:0}
+td{padding:10px;border-top:1px solid var(--bd)}
+tr:hover td{background:#f8faff}
+.chart{display:flex;align-items:flex-end;gap:8px;height:180px;padding-top:10px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--mu);gap:4px}
+.col i{width:100%;max-width:46px;background:linear-gradient(#60a5fa,#2563eb);border-radius:6px 6px 0 0;box-shadow:3px 0 0 #1e40af;min-height:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.rk{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.tag{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;background:#dbeafe;color:#1e40af}
+.empty{text-align:center;color:var(--mu);padding:26px}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+.modal.on{display:flex}
+.mb{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:560px;max-height:92vh;overflow:auto;box-shadow:0 20px 50px #0006}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.ov{display:none}
+@media(max-width:900px){aside{transform:translateX(-100%)}aside.on{transform:none}main{margin-left:0;padding:14px}.top{display:flex}.two{grid-template-columns:1fr}.ov.on{display:block;position:fixed;inset:0;background:#0006;z-index:20}.grid{grid-template-columns:1fr}.btn{flex:1}}
+.dd{position:relative;width:100%}
+.dd select{display:none}
+.ddb{width:100%;text-align:left;font:inherit;font-size:14px;color:var(--tx);cursor:pointer;padding:10px 34px 10px 12px;border-radius:10px;border:1px solid #c5cddd;border-bottom:4px solid #aab4c8;background:linear-gradient(#fff,#e9edf5);box-shadow:inset 0 1px 0 #fff,0 3px 6px #0002;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.1s}
+.ddb:after{content:"";position:absolute;right:13px;top:50%;width:7px;height:7px;border-right:2px solid var(--pri);border-bottom:2px solid var(--pri);transform:translateY(-70%) rotate(45deg)}
+.ddb:active,.ddb.on{transform:translateY(2px);border-bottom-width:2px}
+.ddl{position:fixed;z-index:100;overflow-y:auto;padding:6px;border-radius:14px;background:linear-gradient(#f8fafc,#e2e8f0);border:1px solid #b8c2d6;border-bottom:6px solid #8795ae;box-shadow:0 14px 28px #0005,inset 0 1px 0 #fff;-webkit-overflow-scrolling:touch}
+.ddi{padding:12px 14px;margin:5px 2px 8px;border-radius:10px;font-size:15px;cursor:pointer;color:var(--tx);background:linear-gradient(#fff,#eef2f9);box-shadow:0 4px 0 #b9c4da,0 5px 8px #0002;transition:.08s}
+.ddi:hover{background:linear-gradient(#eff6ff,#dbeafe)}
+.ddi:active{transform:translateY(3px);box-shadow:0 1px 0 #b9c4da}
+.ddi.sel{color:#fff;font-weight:700;background:linear-gradient(#3b82f6,#2563eb);box-shadow:0 4px 0 #1e3a8a,0 5px 8px #0003}
+.ddi.sel:active{box-shadow:0 1px 0 #1e3a8a}
+.ovl{position:fixed;inset:0;z-index:200;background:linear-gradient(135deg,#111827,#1e3a8a);align-items:center;justify-content:center;padding:14px}
+.lb{background:#fff;border-radius:18px;padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px #0006}
+#lgMsg{color:var(--bad);font-size:13px;min-height:16px}
+#plano{gap:14px;align-items:center;font-size:13px;padding:10px 14px}
+.ct{font-size:12px;color:var(--mu);text-align:center;line-height:1.7;word-break:break-word}
+.ct a{color:var(--pri);text-decoration:none}
+aside .ct{color:#94a3b8;padding-top:6px}aside .ct a{color:#93c5fd}
+</style>
+</head>
+<body>
+<div id="login" class="ovl" style="display:flex"><div class="lb"><h2>⛽ Frota Combustível</h2><small style="color:var(--mu)">Controle de combustível da frota na nuvem</small>
+<div class="f"><label>Empresa (apenas no cadastro)</label><input id="lN"></div><div class="f"><label>E-mail</label><input id="lE" type="email"></div><div class="f"><label>Senha</label><input id="lS" type="password"></div>
+<div id="lgMsg"></div><div class="acts" style="margin:0"><button class="btn" onclick="logar()">Entrar</button><button class="btn g" onclick="criar()">Teste grátis 14 dias</button></div><button class="btn s" onclick="modoLocal()">Modo local (demonstração)</button><div class="ct">📞 <a href="https://wa.me/5519997097145" target="_blank">(19) 99709-7145</a><br>🌐 <a href="https://pjtecnologiaesistemas.com.br/" target="_blank">pjtecnologiaesistemas.com.br</a><br>✉️ <a href="mailto:comercial@pjtecnologiaesistemas.com.br">comercial@pjtecnologiaesistemas.com.br</a></div></div></div>
+<div id="bloq" class="ovl" style="display:none"><div class="lb"><h2 id="bqT">Acesso bloqueado</h2><p>Fale conosco para regularizar o seu plano.</p><a class="btn g" id="bqZ" target="_blank" style="text-decoration:none;text-align:center">Falar no WhatsApp</a><button class="btn s" onclick="sair()">Sair</button><div class="ct">📞 <a href="https://wa.me/5519997097145" target="_blank">(19) 99709-7145</a><br>🌐 <a href="https://pjtecnologiaesistemas.com.br/" target="_blank">pjtecnologiaesistemas.com.br</a><br>✉️ <a href="mailto:comercial@pjtecnologiaesistemas.com.br">comercial@pjtecnologiaesistemas.com.br</a></div></div></div>
+<div class="ov" id="ov" onclick="menu(0)"></div>
+<aside id="side">
+  <h1>⛽ Frota Combustível</h1>
+  <button class="nav on" data-p="dash">📊 Painel</button>
+  <button class="nav" data-p="abast">⛽ Abastecimentos</button>
+  <button class="nav" data-p="veic">🚚 Veículos</button>
+  <button class="nav" data-p="rel">📑 Relatórios</button>
+  <button class="nav" data-p="admin" id="nAdm" style="display:none">🛡️ Administração</button>
+  <button class="nav" style="margin-top:auto" id="bkp">💾 Backup (JSON)</button>
+  <button class="nav" onclick="sair()">🚪 Sair</button>
+  <div class="ct">📞 <a href="https://wa.me/5519997097145" target="_blank">(19) 99709-7145</a><br>🌐 <a href="https://pjtecnologiaesistemas.com.br/" target="_blank">pjtecnologiaesistemas.com.br</a><br>✉️ <a href="mailto:comercial@pjtecnologiaesistemas.com.br">comercial@pjtecnologiaesistemas.com.br</a></div>
+</aside>
+<main>
+  <div class="top"><button class="btn sm" onclick="menu(1)">☰ Menu</button><b>Controle de Combustível</b></div>
+
+  <div class="bar" id="plano" style="display:none"></div>
+  <section class="bar" id="filtros">
+    <div class="f"><label>Período</label>
+      <select id="fp"><option value="30">Últimos 30 dias</option><option value="hoje">Hoje</option><option value="7">Últimos 7 dias</option><option value="mes">Mês atual</option><option value="ano">Ano atual</option><option value="todos">Todo o período</option><option value="custom">Personalizado…</option></select></div>
+    <div class="f cu" style="display:none"><label>De</label><input type="date" id="fi"></div>
+    <div class="f cu" style="display:none"><label>Até</label><input type="date" id="ff"></div>
+    <div class="f"><label>Veículo</label><select id="fv"></select></div>
+    <div class="f"><label>Combustível</label><select id="fc"><option value="">Todos</option><option>Diesel S10</option><option>Diesel S500</option><option>Gasolina</option><option>Etanol</option><option>GNV</option></select></div>
+  </section>
+
+  <div id="p-dash" class="pg">
+    <h2>Painel</h2>
+    <div class="kpis" id="kpis"></div>
+    <div class="two">
+      <div class="card"><h3>Gasto por mês (R$)</h3><div class="chart" id="chart"></div></div>
+      <div class="card"><h3>Ranking por veículo</h3><div id="rank"></div></div>
+    </div>
+  </div>
+
+  <div id="p-abast" class="pg" style="display:none">
+    <h2>Abastecimentos</h2>
+    <div class="acts">
+      <button class="btn g" onclick="abrirAb()">＋ Novo abastecimento</button>
+      <button class="btn r" onclick="expPDF()">PDF</button>
+      <button class="btn g" onclick="expXLS()">Excel</button>
+      <button class="btn o" onclick="expCSV()">CSV</button>
+    </div>
+    <div class="card tw"><table><thead><tr><th>Data</th><th>Veículo</th><th>Motorista</th><th>Posto</th><th>Combustível</th><th>Litros</th><th>R$/L</th><th>Total</th><th>KM</th><th>km/L</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+  </div>
+
+  <div id="p-veic" class="pg" style="display:none">
+    <h2>Veículos</h2>
+    <div class="acts"><button class="btn g" onclick="abrirV()">＋ Novo veículo</button></div>
+    <div class="card tw"><table><thead><tr><th>Placa</th><th>Modelo</th><th>Tipo</th><th>Combustível padrão</th><th>Gasto (período)</th><th>Litros</th><th></th></tr></thead><tbody id="tv"></tbody></table></div>
+  </div>
+
+  <div id="p-admin" class="pg" style="display:none">
+    <h2>Administração de clientes</h2>
+    <div class="acts"><button class="btn" onclick="adminLoad()">↻ Atualizar</button></div>
+    <div class="card tw"><table><thead><tr><th>Empresa</th><th style="min-width:170px">Plano</th><th>Validade</th><th>Status</th><th></th></tr></thead><tbody id="ta"></tbody></table></div>
+  </div>
+
+  <div id="p-rel" class="pg" style="display:none">
+    <h2>Relatórios</h2>
+    <div class="card"><h3>Resumo por combustível (filtros aplicados)</h3><div class="tw"><table><thead><tr><th>Combustível</th><th>Abastecimentos</th><th>Litros</th><th>Total</th><th>Preço médio</th></tr></thead><tbody id="tr"></tbody></table></div></div>
+    <div class="acts"><button class="btn r" onclick="expPDF()">Exportar PDF</button><button class="btn g" onclick="expXLS()">Exportar Excel</button><button class="btn o" onclick="expCSV()">Exportar CSV</button></div>
+  </div>
+</main>
+
+<div class="modal" id="mA"><div class="mb"><h3 id="mAt">Abastecimento</h3><div class="grid">
+  <div class="f"><label>Data</label><input type="date" id="aD"></div>
+  <div class="f"><label>Veículo</label><select id="aV"></select></div>
+  <div class="f"><label>Motorista</label><input id="aM"></div>
+  <div class="f"><label>Posto</label><input id="aP"></div>
+  <div class="f"><label>Combustível</label><select id="aC"><option>Diesel S10</option><option>Diesel S500</option><option>Gasolina</option><option>Etanol</option><option>GNV</option></select></div>
+  <div class="f"><label>KM do odômetro</label><input type="number" id="aK" min="0"></div>
+  <div class="f"><label>Litros</label><input type="number" id="aL" step="0.01" min="0"></div>
+  <div class="f"><label>Preço por litro (R$)</label><input type="number" id="aR" step="0.001" min="0"></div>
+  <div class="f"><label>Total (R$)</label><input id="aT" readonly></div>
+</div><div class="acts" style="margin:0"><button class="btn g" onclick="salvarAb()">Salvar</button><button class="btn s" onclick="fechar()">Cancelar</button></div></div></div>
+
+<div class="modal" id="mV"><div class="mb"><h3>Veículo</h3><div class="grid">
+  <div class="f"><label>Placa</label><input id="vP" maxlength="8" style="text-transform:uppercase"></div>
+  <div class="f"><label>Modelo</label><input id="vM"></div>
+  <div class="f"><label>Tipo</label><select id="vT"><option>Caminhão</option><option>Carro</option><option>Moto</option><option>Van</option><option>Utilitário</option></select></div>
+  <div class="f"><label>Combustível padrão</label><select id="vC"><option>Diesel S10</option><option>Diesel S500</option><option>Gasolina</option><option>Etanol</option><option>GNV</option></select></div>
+</div><div class="acts" style="margin:0"><button class="btn g" onclick="salvarV()">Salvar</button><button class="btn s" onclick="fechar()">Cancelar</button></div></div></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const R=n=>(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const N=(n,d=2)=>(n||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const D=s=>s.split('-').reverse().join('/');
+const iso=d=>d.toISOString().slice(0,10);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let DB={v:[],a:[]},EMP=null,USER=null,LOCAL=false,st;
+function save(){if(LOCAL){try{localStorage.setItem('fuel_db',JSON.stringify(DB))}catch(e){}return}
+  clearTimeout(st);st=setTimeout(()=>fs.collection('empresas').doc(USER.uid).collection('dados').doc('frota').set({json:JSON.stringify(DB)}).catch(e=>alert('Erro ao salvar: '+e.message)),400)}
+function seed(){
+  const v=[{id:'v1',placa:'ABC-1D23',modelo:'Volvo FH 460',tipo:'Caminhão',comb:'Diesel S10'},{id:'v2',placa:'FGH-4I56',modelo:'Fiat Strada',tipo:'Utilitário',comb:'Etanol'},{id:'v3',placa:'JKL-7M89',modelo:'Renault Master',tipo:'Van',comb:'Diesel S10'}];
+  const a=[],km={v1:120000,v2:45000,v3:80000},cfg={v1:[220,3.2],v2:[40,11],v3:[70,8]};
+  for(let i=11;i>=0;i--)v.forEach((x,j)=>{const d=new Date();d.setDate(d.getDate()-i*6-j*2);const[l,k]=cfg[x.id];const lit=l*(0.9+Math.random()*.2);km[x.id]+=Math.round(lit*k);const pr=x.comb=='Etanol'?4.29:6.19+Math.random()*.2;
+    a.push({id:uid(),data:iso(d),vid:x.id,mot:['Carlos','Marcos','João'][j],posto:'Posto Central',comb:x.comb,litros:+lit.toFixed(2),preco:+pr.toFixed(3),km:km[x.id]})});
+  return{v,a}}
+const vn=id=>{const v=DB.v.find(x=>x.id==id);return v?v.placa+' · '+v.modelo:'—'};
+function kml(){const m={};[...DB.a].sort((x,y)=>x.km-y.km).forEach(a=>{const p=m[a.vid];a.kml=p&&a.km>p.km&&a.litros?(a.km-p.km)/a.litros:null;m[a.vid]=a})}
+function range(){const p=$('#fp').value,t=new Date(),h=iso(t);let i='0000-01-01',f='9999-12-31';
+  if(p=='hoje')i=f=h;else if(p=='7'||p=='30'){const d=new Date();d.setDate(d.getDate()-(+p-1));i=iso(d);f=h}
+  else if(p=='mes'){i=h.slice(0,7)+'-01';f=h}else if(p=='ano'){i=h.slice(0,4)+'-01-01';f=h}
+  else if(p=='custom'){i=$('#fi').value||i;f=$('#ff').value||f}return[i,f]}
+function dados(){kml();const[i,f]=range(),v=$('#fv').value,c=$('#fc').value;
+  return DB.a.filter(a=>a.data>=i&&a.data<=f&&(!v||a.vid==v)&&(!c||a.comb==c)).sort((x,y)=>y.data.localeCompare(x.data)||y.km-x.km)}
+const tot=a=>a.litros*a.preco;
+function fillVeic(){const s=$('#fv'),c=s.value;s.innerHTML='<option value="">Todos os veículos</option>'+DB.v.map(v=>`<option value="${v.id}">${v.placa} · ${v.modelo}</option>`).join('');s.value=c;
+  $('#aV').innerHTML=DB.v.map(v=>`<option value="${v.id}">${v.placa} · ${v.modelo}</option>`).join('')}
+function render(){const L=dados();
+  const g=L.reduce((s,a)=>s+tot(a),0),lt=L.reduce((s,a)=>s+a.litros,0);
+  const ks=L.filter(a=>a.kml),mk=ks.length?ks.reduce((s,a)=>s+a.kml,0)/ks.length:0;
+  const kmr=ks.length?ks.reduce((s,a)=>s+(a.kml*a.litros),0):0;
+  $('#kpis').innerHTML=[['Total gasto',R(g),'#2563eb'],['Litros',N(lt)+' L','#16a34a'],['Abastecimentos',L.length,'#f59e0b'],['Preço médio/L',R(lt?g/lt:0),'#8b5cf6'],['Média km/L',N(mk),'#0ea5e9'],['Custo por km',kmr?R(ks.reduce((s,a)=>s+tot(a),0)/kmr):'—','#dc2626']].map(k=>`<div class="kpi" style="border-color:${k[2]}"><small>${k[0]}</small><b>${k[1]}</b></div>`).join('');
+  const m={};L.forEach(a=>{const k=a.data.slice(0,7);m[k]=(m[k]||0)+tot(a)});const ks2=Object.keys(m).sort().slice(-12),mx=Math.max(...ks2.map(k=>m[k]),1);
+  $('#chart').innerHTML=ks2.length?ks2.map(k=>`<div class="col"><span>${N(m[k],0)}</span><i style="height:${m[k]/mx*130}px"></i>${k.slice(5)}/${k.slice(2,4)}</div>`).join(''):'<div class="empty" style="width:100%">Sem dados</div>';
+  const rv={};L.forEach(a=>{rv[a.vid]=(rv[a.vid]||0)+tot(a)});
+  $('#rank').innerHTML=Object.entries(rv).sort((a,b)=>b[1]-a[1]).map(([k,x])=>`<div class="rk"><span>${vn(k)}</span><b>${R(x)}</b></div>`).join('')||'<div class="empty">Sem dados</div>';
+  $('#tb').innerHTML=L.map(a=>`<tr><td>${D(a.data)}</td><td>${vn(a.vid)}</td><td>${a.mot||''}</td><td>${a.posto||''}</td><td><span class="tag">${a.comb}</span></td><td>${N(a.litros)}</td><td>${N(a.preco,3)}</td><td><b>${R(tot(a))}</b></td><td>${a.km?a.km.toLocaleString('pt-BR'):''}</td><td>${a.kml?N(a.kml):'—'}</td><td style="white-space:nowrap"><button class="btn sm" onclick="abrirAb('${a.id}')">✎</button> <button class="btn sm r" onclick="delAb('${a.id}')">✕</button></td></tr>`).join('')||'<tr><td colspan="11" class="empty">Nenhum abastecimento no período.</td></tr>';
+  $('#tv').innerHTML=DB.v.map(v=>{const l=L.filter(a=>a.vid==v.id);return`<tr><td><b>${v.placa}</b></td><td>${v.modelo}</td><td>${v.tipo}</td><td>${v.comb}</td><td>${R(l.reduce((s,a)=>s+tot(a),0))}</td><td>${N(l.reduce((s,a)=>s+a.litros,0))}</td><td style="white-space:nowrap"><button class="btn sm" onclick="abrirV('${v.id}')">✎</button> <button class="btn sm r" onclick="delV('${v.id}')">✕</button></td></tr>`}).join('')||'<tr><td colspan="7" class="empty">Nenhum veículo.</td></tr>';
+  const rc={};L.forEach(a=>{const o=rc[a.comb]=rc[a.comb]||{n:0,l:0,t:0};o.n++;o.l+=a.litros;o.t+=tot(a)});
+  $('#tr').innerHTML=Object.entries(rc).map(([k,o])=>`<tr><td>${k}</td><td>${o.n}</td><td>${N(o.l)}</td><td>${R(o.t)}</td><td>${R(o.t/o.l)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">Sem dados.</td></tr>'}
+// navegação
+function menu(o){$('#side').classList.toggle('on',!!o);$('#ov').classList.toggle('on',!!o)}
+$$('.nav[data-p]').forEach(b=>b.onclick=()=>{$$('.nav').forEach(x=>x.classList.remove('on'));b.classList.add('on');$$('.pg').forEach(p=>p.style.display='none');$('#p-'+b.dataset.p).style.display='block';menu(0)});
+$('#fp').onchange=()=>{$$('.cu').forEach(e=>e.style.display=$('#fp').value=='custom'?'flex':'none');render()};
+['#fi','#ff','#fv','#fc'].forEach(s=>$(s).onchange=render);
+// modais
+let eA=null,eV=null;
+function fechar(){$$('.modal').forEach(m=>m.classList.remove('on'))}
+function abrirAb(id){eA=id||null;const a=DB.a.find(x=>x.id==id)||{data:iso(new Date()),vid:DB.v[0]?.id,mot:'',posto:'',comb:DB.v[0]?.comb||'Diesel S10',litros:'',preco:'',km:''};
+  if(!DB.v.length)return alert('Cadastre um veículo primeiro.');
+  $('#aD').value=a.data;$('#aV').value=a.vid;$('#aM').value=a.mot;$('#aP').value=a.posto;$('#aC').value=a.comb;$('#aL').value=a.litros;$('#aR').value=a.preco;$('#aK').value=a.km;calc();$('#mA').classList.add('on')}
+function calc(){$('#aT').value=R((+$('#aL').value||0)*(+$('#aR').value||0))}
+['#aL','#aR'].forEach(s=>$(s).oninput=calc);
+$('#aV').onchange=()=>{const v=DB.v.find(x=>x.id==$('#aV').value);if(v)$('#aC').value=v.comb};
+function salvarAb(){const a={id:eA||uid(),data:$('#aD').value,vid:$('#aV').value,mot:$('#aM').value.trim(),posto:$('#aP').value.trim(),comb:$('#aC').value,litros:+$('#aL').value,preco:+$('#aR').value,km:+$('#aK').value};
+  if(!a.data||!a.vid||a.litros<=0||a.preco<=0)return alert('Informe data, veículo, litros e preço.');
+  if(eA)DB.a[DB.a.findIndex(x=>x.id==eA)]=a;else DB.a.push(a);save();fechar();render()}
+function delAb(id){if(confirm('Excluir este abastecimento?')){DB.a=DB.a.filter(x=>x.id!=id);save();render()}}
+function abrirV(id){eV=id||null;const v=DB.v.find(x=>x.id==id)||{placa:'',modelo:'',tipo:'Caminhão',comb:'Diesel S10'};$('#vP').value=v.placa;$('#vM').value=v.modelo;$('#vT').value=v.tipo;$('#vC').value=v.comb;$('#mV').classList.add('on')}
+function salvarV(){const v={id:eV||uid(),placa:$('#vP').value.trim().toUpperCase(),modelo:$('#vM').value.trim(),tipo:$('#vT').value,comb:$('#vC').value};
+  if(!v.placa||!v.modelo)return alert('Informe placa e modelo.');
+  if(!eV&&DB.v.length>=lim())return alert('Limite do plano atingido ('+lim()+' veículos). Fale conosco para fazer upgrade.');
+  if(eV)DB.v[DB.v.findIndex(x=>x.id==eV)]=v;else DB.v.push(v);save();fechar();fillVeic();render()}
+function delV(id){if(DB.a.some(a=>a.vid==id))return alert('Veículo possui abastecimentos. Exclua-os antes.');if(confirm('Excluir veículo?')){DB.v=DB.v.filter(x=>x.id!=id);save();fillVeic();render()}}
+// exportações
+const HEAD=['Data','Veículo','Motorista','Posto','Combustível','Litros','R$/L','Total (R$)','KM','km/L'];
+function linhas(){return dados().map(a=>[D(a.data),vn(a.vid),a.mot||'',a.posto||'',a.comb,N(a.litros),N(a.preco,3),N(tot(a)),a.km||'',a.kml?N(a.kml):''])}
+function periodo(){const[i,f]=range();return i=='0000-01-01'&&f=='9999-12-31'?'Todo o período':(i=='0000-01-01'?'Até ':D(i)+' a ')+(f=='9999-12-31'?'hoje':D(f))}
+function baixar(blob,nome){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}
+function expCSV(){const r=linhas();if(!r.length)return alert('Nada para exportar.');
+  const c=[HEAD,...r].map(l=>l.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  baixar(new Blob(['\ufeff'+c],{type:'text/csv;charset=utf-8'}),'combustivel_'+iso(new Date())+'.csv')}
+function expXLS(){const r=linhas();if(!r.length)return alert('Nada para exportar.');if(!window.XLSX)return alert('Biblioteca Excel indisponível (sem internet).');
+  const ws=XLSX.utils.aoa_to_sheet([HEAD,...dados().map(a=>[D(a.data),vn(a.vid),a.mot||'',a.posto||'',a.comb,a.litros,a.preco,+tot(a).toFixed(2),a.km||'',a.kml?+a.kml.toFixed(2):''])]);
+  ws['!cols']=[10,28,14,16,14,9,8,12,10,8].map(w=>({wch:w}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Abastecimentos');XLSX.writeFile(wb,'combustivel_'+iso(new Date())+'.xlsx')}
+function expPDF(){const L=dados();if(!L.length)return alert('Nada para exportar.');if(!window.jspdf)return alert('Biblioteca PDF indisponível (sem internet).');
+  const d=new jspdf.jsPDF({orientation:'landscape'});d.setFontSize(16);d.text('Controle de Combustível da Frota',14,14);d.setFontSize(10);
+  d.text('Período: '+periodo()+'   |   Total: '+R(L.reduce((s,a)=>s+tot(a),0))+'   |   Litros: '+N(L.reduce((s,a)=>s+a.litros,0)),14,21);
+  d.autoTable({head:[HEAD],body:linhas(),startY:26,styles:{fontSize:8},headStyles:{fillColor:[37,99,235]}});d.save('combustivel_'+iso(new Date())+'.pdf')}
+$('#bkp').onclick=()=>baixar(new Blob([JSON.stringify(DB,null,1)],{type:'application/json'}),'backup_frota_'+iso(new Date())+'.json');
+// listas suspensas 3D (substituem os selects nativos, mantendo value/onchange)
+let ddOpen=null;
+function closeDD(){if(ddOpen){ddOpen.l.remove();ddOpen.b.classList.remove('on');ddOpen=null}}
+function openDD(sel,b){const was=ddOpen&&ddOpen.b===b;closeDD();if(was)return;
+  const l=document.createElement('div');l.className='ddl';
+  [...sel.options].forEach((o,i)=>{const it=document.createElement('div');it.className='ddi'+(i==sel.selectedIndex?' sel':'');it.textContent=o.text;
+    it.onclick=e=>{e.stopPropagation();sel.value=o.value;sel.dispatchEvent(new Event('change',{bubbles:true}));closeDD()};l.appendChild(it)});
+  document.body.appendChild(l);b.classList.add('on');
+  const r=b.getBoundingClientRect(),below=innerHeight-r.bottom-12,above=r.top-12,up=below<200&&above>below,mh=Math.max(120,Math.min(300,up?above:below));
+  l.style.width=r.width+'px';l.style.left=Math.max(6,Math.min(r.left,innerWidth-r.width-6))+'px';l.style.maxHeight=mh+'px';
+  if(up)l.style.bottom=(innerHeight-r.top+4)+'px';else l.style.top=(r.bottom+4)+'px';
+  const s=l.querySelector('.sel');if(s)l.scrollTop=s.offsetTop-l.clientHeight/2+s.offsetHeight/2;
+  ddOpen={l,b}}
+function dd3(sel){const w=document.createElement('div');w.className='dd';sel.parentNode.insertBefore(w,sel);w.appendChild(sel);
+  const b=document.createElement('button');b.type='button';b.className='ddb';w.insertBefore(b,sel);
+  const d=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
+  const sync=()=>{const o=sel.options[sel.selectedIndex];b.textContent=o?o.text:'Selecione'};
+  Object.defineProperty(sel,'value',{get(){return d.get.call(sel)},set(v){d.set.call(sel,v);sync()}});
+  new MutationObserver(sync).observe(sel,{childList:true});sync();
+  b.onclick=e=>{e.stopPropagation();openDD(sel,b)}}
+$$('select').forEach(dd3);
+document.addEventListener('click',closeDD);
+addEventListener('resize',closeDD);
+addEventListener('keydown',e=>{if(e.key=='Escape')closeDD()});
+addEventListener('scroll',e=>{if(!(e.target.closest&&e.target.closest('.ddl')))closeDD()},true);
+// ===== SaaS =====
+const FB={apiKey:"AIzaSyDj6Z9wm4kILbyfbzetLV76oywMtUQ_bPM",authDomain:"controle-de-frota-ee82b.firebaseapp.com",projectId:"controle-de-frota-ee82b",storageBucket:"controle-de-frota-ee82b.firebasestorage.app",messagingSenderId:"55175283067",appId:"1:55175283067:web:9975884070f8b8d14abdde"}; // cole aqui a config do seu projeto Firebase
+const ZAP='5519997097145'; // WhatsApp para assinatura/renovação
+const PLANOS={teste:{n:'Teste grátis',l:3},basico:{n:'Básico',l:10},pro:{n:'Profissional',l:9999}};
+let fs,au,isAdm=false,criando=false;
+$('#bqZ').href='https://wa.me/'+ZAP;
+const lim=()=>EMP?EMP.limite||3:3;
+const msg=m=>$('#lgMsg').textContent=typeof m=='string'?m:(m.message||'Erro');
+const dias=t=>t?Math.ceil((t.toDate()-new Date())/864e5):null;
+if(FB.apiKey&&FB.projectId){firebase.initializeApp(FB);au=firebase.auth();fs=firebase.firestore();au.onAuthStateChanged(sessao)}
+else msg('Firebase não configurado: preencha FB no código ou use o modo local.');
+async function logar(){if(!au)return msg('Firebase não configurado.');try{await au.signInWithEmailAndPassword($('#lE').value.trim(),$('#lS').value)}catch(e){msg(e)}}
+async function criar(){const n=$('#lN').value.trim();if(!n)return msg('Informe o nome da empresa.');if(!au)return msg('Firebase não configurado.');
+  criando=true;try{const c=await au.createUserWithEmailAndPassword($('#lE').value.trim(),$('#lS').value),f=new Date();f.setDate(f.getDate()+14);
+    await fs.collection('empresas').doc(c.user.uid).set({nome:n,email:c.user.email,plano:'teste',status:'ativo',limite:3,validade:firebase.firestore.Timestamp.fromDate(f),criado:firebase.firestore.FieldValue.serverTimestamp()});
+  }catch(e){msg(e);criando=false;return}criando=false;sessao(au.currentUser)}
+function modoLocal(){LOCAL=true;try{DB=JSON.parse(localStorage.getItem('fuel_db'))}catch(e){}if(!DB||!DB.v)DB=seed();EMP={nome:'Modo local',plano:'pro',status:'ativo',limite:9999};abrir()}
+function sair(){LOCAL?location.reload():au.signOut()}
+async function sessao(u){if(criando)return;
+  if(!u){USER=null;EMP=null;$('#login').style.display='flex';$('#bloq').style.display='none';return}
+  USER=u;try{
+    isAdm=(await fs.collection('admins').doc(u.uid).get()).exists;
+    const s=await fs.collection('empresas').doc(u.uid).get();
+    if(!s.exists&&!isAdm){msg('Cadastro da empresa não encontrado.');return au.signOut()}
+    EMP=s.exists?s.data():{nome:'Administrador',plano:'pro',status:'ativo',limite:9999};
+    const v=dias(EMP.validade);
+    if(!isAdm&&(EMP.status!='ativo'||(v!==null&&v<0))){$('#login').style.display='none';$('#bloq').style.display='flex';$('#bqT').textContent=EMP.status!='ativo'?'Acesso bloqueado':'Plano vencido';return}
+    const d=await fs.collection('empresas').doc(u.uid).collection('dados').doc('frota').get();
+    DB=d.exists?JSON.parse(d.data().json):{v:[],a:[]};abrir();
+  }catch(e){msg(e)}}
+function abrir(){$('#login').style.display='none';$('#bloq').style.display='none';
+  $('#nAdm').style.display=isAdm?'flex':'none';$('#plano').style.display=LOCAL?'none':'flex';
+  fillVeic();render();if(isAdm)adminLoad()}
+function banner(){const v=dias(EMP.validade),p=PLANOS[EMP.plano]||PLANOS.teste;
+  $('#plano').innerHTML=`<b>${EMP.nome}</b><span class="tag">${p.n}</span><span>${DB.v.length}/${lim()>999?'∞':lim()} veículos</span>`+(v!==null?`<span>${v>=0?v+' dia(s) restante(s)':'vencido'}</span>`:'')+(v!==null&&v<=5?`<a class="btn sm o" style="text-decoration:none" target="_blank" href="https://wa.me/${ZAP}?text=${encodeURIComponent('Quero renovar o plano - '+EMP.nome)}">Renovar</a>`:'')}
+const _render=render;render=function(){_render();if(EMP)banner()};
+// administração
+async function adminLoad(){try{const q=await fs.collection('empresas').orderBy('criado','desc').get();
+  $('#ta').innerHTML=q.docs.map(d=>{const e=d.data();return`<tr><td><b>${e.nome}</b><br><small>${e.email}</small></td><td><select class="aP">${Object.entries(PLANOS).map(([k,x])=>`<option value="${k}"${k==e.plano?' selected':''}>${x.n}</option>`).join('')}</select></td><td><input type="date" class="aV" value="${e.validade?iso(e.validade.toDate()):''}"></td><td><span class="tag" style="background:${e.status=='ativo'?'#dcfce7':'#fee2e2'}">${e.status}</span></td><td style="white-space:nowrap"><button class="btn sm g" onclick="admAct('${d.id}','salvar',this)">Salvar</button> <button class="btn sm" onclick="admAct('${d.id}','mais',this)">+30d</button> <button class="btn sm r" onclick="admAct('${d.id}','tog',this)">${e.status=='ativo'?'Bloquear':'Liberar'}</button></td></tr>`}).join('')||'<tr><td colspan="5" class="empty">Nenhuma empresa.</td></tr>';
+  $$('#ta select').forEach(dd3)}catch(e){alert(e.message)}}
+async function admAct(id,a,b){const tr=b.closest('tr'),ref=fs.collection('empresas').doc(id),e=(await ref.get()).data(),T=firebase.firestore.Timestamp;let u={};
+  if(a=='salvar'){const pl=tr.querySelector('.aP').value,dt=tr.querySelector('.aV').value;u={plano:pl,limite:PLANOS[pl].l};if(dt)u.validade=T.fromDate(new Date(dt+'T23:59:59'))}
+  if(a=='mais'){const d0=e.validade&&e.validade.toDate()>new Date()?e.validade.toDate():new Date();d0.setDate(d0.getDate()+30);u={validade:T.fromDate(d0),status:'ativo'}}
+  if(a=='tog')u={status:e.status=='ativo'?'bloqueado':'ativo'};
+  try{await ref.update(u);adminLoad()}catch(x){alert(x.message)}}
+$$('.nav[data-p]').forEach(b=>b.addEventListener('click',()=>{$('#filtros').style.display=b.dataset.p=='admin'?'none':''}));
+fillVeic();render();
+</script>
+</body>
+</html>
